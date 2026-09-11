@@ -524,11 +524,39 @@
     function copyReceiptToClipboard() {
         const receipt = document.getElementById('share-receipt');
         const text = receipt.innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('Receipt copied to clipboard', 'success');
-        }).catch(() => {
+
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Receipt copied to clipboard', 'success');
+            }).catch(() => {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast('Receipt copied to clipboard', 'success');
+            } else {
+                showToast('Failed to copy', 'error');
+            }
+        } catch (err) {
             showToast('Failed to copy', 'error');
-        });
+        } finally {
+            document.body.removeChild(textarea);
+        }
     }
 
     function downloadReceipt() {
