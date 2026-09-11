@@ -11,11 +11,15 @@ from rest_framework.generics import RetrieveAPIView, CreateAPIView, DestroyAPIVi
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from decimal import Decimal
 
-from onlinebankingportalapp.models import Account, BillPayment, EStatement, Payee, ScheduledPayment, Transaction
-from onlinebankingportalapp.serializers import AccountSerializer, BillPaymentSerializer, EStatementSerializer, ExternalTransferSerializer, PayeeSerializer, RegisterSerializer, ChangePasswordSerializer, ScheduledPaymentSerializer, TransactionSerializer, TransferSerializer, TransferSerializer
+from onlinebankingportalapp.models import Account, BillPayment, EStatement, ExternalTransfer, Payee, ScheduledPayment, Transaction, Transfer
+from onlinebankingportalapp.serializers import AccountSerializer, BillPaymentSerializer, EStatementSerializer, ExternalTransferActivitySerializer, ExternalTransferSerializer, PayeeSerializer, RegisterSerializer, ChangePasswordSerializer, ScheduledPaymentSerializer, TransactionSerializer, TransferActivitySerializer, TransferSerializer
 
 # Create your views here.
+
+def index(request):
+    return render(request, 'index.html')
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -203,3 +207,113 @@ class CancelScheduledPaymentView(DestroyAPIView):
 
     def get_queryset(self):
         return ScheduledPayment.objects.filter(user=self.request.user, status='scheduled')
+
+
+class FundAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        account_id = request.data.get('account_id')
+        amount = request.data.get('amount')
+
+        if not account_id or not amount:
+            return Response({'error': 'account_id and amount are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            amount = Decimal(str(amount))
+            if amount <= 0:
+                return Response({'error': 'Amount must be positive'}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError, ArithmeticError):
+            return Response({'error': 'Invalid amount'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            account = Account.objects.get(id=account_id, user=request.user)
+        except Account.DoesNotExist:
+            return Response({'error': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        account.balance += amount
+        account.save()
+
+        # Create a transaction record
+        Transaction.objects.create(
+            account=account,
+            amount=amount,
+            remark='Account funding'
+        )
+
+        return Response({
+            'message': 'Account funded successfully',
+            'account_id': account.id,
+            'new_balance': str(account.balance),
+            'currency': account.currency,
+        }, status=status.HTTP_200_OK)
+
+
+class RecentActivityView(APIView):
+    """Combined recent activity: transactions, internal transfers, external transfers."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        account_ids = list(user.accounts.values_list('id', flat=True))
+
+        # Gather all activity items
+        activities = []
+
+        # 1. Regular transactions
+        transactions = Transaction.objects.filter(account__in=account_ids)
+        tx_data = TransactionSerializer(transactions, many=True, context={'request': request}).data
+        for item in tx_data:
+            activities.append({
+                'id': item['id'],
+                'amount': item['amount'],
+                'remark': item['remark'] or 'Transaction',
+                'date': item['date'],
+                'payment_method': item.get('payment_method', 'N/A'),
+                'recipient_details': item.get('recipient_details', None),
+            })
+
+        # 2. Internal transfers (outgoing - user is sender)
+        outgoing = Transfer.objects.filter(from_account__user=user)
+        out_data = TransferActivitySerializer(outgoing, many=True, direction='outgoing', context={'request': request}).data
+        for item in out_data:
+            activities.append({
+                'id': item['id'],
+                'amount': item['amount'],
+                'remark': item['remark'],
+                'date': item['date'],
+                'payment_method': item.get('payment_method', 'N/A'),
+                'recipient_details': item.get('recipient_details', None),
+            })
+
+        # 3. Internal transfers (incoming - user is recipient)
+        incoming = Transfer.objects.filter(to_account__user=user)
+        in_data = TransferActivitySerializer(incoming, many=True, direction='incoming', context={'request': request}).data
+        for item in in_data:
+            activities.append({
+                'id': item['id'],
+                'amount': item['amount'],
+                'remark': item['remark'],
+                'date': item['date'],
+                'payment_method': item.get('payment_method', 'N/A'),
+                'recipient_details': item.get('recipient_details', None),
+            })
+
+        # 4. External transfers (outgoing only)
+        external = ExternalTransfer.objects.filter(account__user=user)
+        ext_data = ExternalTransferActivitySerializer(external, many=True, context={'request': request}).data
+        for item in ext_data:
+            activities.append({
+                'id': item['id'],
+                'amount': item['amount'],
+                'remark': item['remark'],
+                'date': item['date'],
+                'payment_method': item.get('payment_method', 'N/A'),
+                'recipient_details': item.get('recipient_details', None),
+            })
+
+        # Sort by date descending, limit to 5
+        activities.sort(key=lambda x: x['date'], reverse=True)
+        activities = activities[:5]
+
+        return Response(activities)

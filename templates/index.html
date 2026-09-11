@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1a237e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="VORD">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#1a237e">
+    <meta name="msapplication-TileImage" content="/static/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>VORD - Online Banking Portal</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+</head>
+<body>
+    <div id="app">
+        <!-- Toast Notifications Container -->
+        <div id="toast-container"></div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page auth-page">
+            <div class="auth-container">
+                <div class="auth-logo">
+                    <div class="logo-icon">&#x1F3DB;</div>
+                    <h1>VORD</h1>
+                    <p>Online Banking Portal</p>
+                </div>
+                <form id="login-form" class="auth-form">
+                    <h2>Welcome Back</h2>
+                    <p class="form-subtitle">Sign in to access your accounts</p>
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" required placeholder="Enter your username">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                    <p class="auth-link">Don't have an account? <a href="#" data-navigate="register">Create Account</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Registration Page -->
+        <div id="register-page" class="page auth-page" style="display: none;">
+            <div class="auth-container">
+                <div class="auth-logo">
+                    <div class="logo-icon">&#x1F3DB;</div>
+                    <h1>VORD</h1>
+                    <p>Online Banking Portal</p>
+                </div>
+                <form id="register-form" class="auth-form">
+                    <h2>Create Account</h2>
+                    <p class="form-subtitle">Join VORD today</p>
+                    <div class="form-group">
+                        <label for="reg-username">Username</label>
+                        <input type="text" id="reg-username" name="username" required placeholder="Choose a username">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email</label>
+                        <input type="email" id="reg-email" name="email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" name="password" required placeholder="Create a password" minlength="8">
+                        <small class="form-hint">Must be at least 8 characters</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                    <p class="auth-link">Already have an account? <a href="#" data-navigate="login">Sign In</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Application (Authenticated) -->
+        <div id="app-page" class="page" style="display: none;">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-icon">&#x1F3DB;</div>
+                    <span class="logo-text">VORD</span>
+                    <button class="sidebar-close" id="sidebar-close">&times;</button>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <span class="nav-icon">&#x1F3E0;</span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="accounts">
+                        <span class="nav-icon">&#x1F4B3;</span>
+                        <span class="nav-text">Accounts</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="transfers">
+                        <span class="nav-icon">&#x1F4B1;</span>
+                        <span class="nav-text">Transfers</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="payees">
+                        <span class="nav-icon">&#x1F468;</span>
+                        <span class="nav-text">Payees</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="bills">
+                        <span class="nav-icon">&#x1F4B8;</span>
+                        <span class="nav-text">Bills</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="profile">
+                        <span class="nav-icon">&#x2699;</span>
+                        <span class="nav-text">Profile</span>
+                    </a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button class="btn btn-logout" id="logout-btn">
+                        <span class="nav-icon">&#x274C;</span>
+                        <span class="nav-text">Logout</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Mobile Header -->
+                <header class="mobile-header">
+                    <button class="menu-toggle" id="menu-toggle">&#x2630;</button>
+                    <span class="mobile-logo">VORD</span>
+                    <span class="user-greeting" id="user-greeting"></span>
+                </header>
+
+                <!-- Page Content Container -->
+                <div class="content" id="content">
+                    <!-- Dashboard Page -->
+                    <div id="dashboard-page" class="content-page">
+                        <div class="page-header">
+                            <h1>Dashboard</h1>
+                            <p class="page-subtitle">Welcome back! Here's your financial overview.</p>
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-navigate="transfers">
+                                <span class="action-icon">&#x1F4B1;</span>
+                                <span>Transfer Money</span>
+                            </button>
+                            <button class="quick-action-btn" data-navigate="bills">
+                                <span class="action-icon">&#x1F4B8;</span>
+                                <span>Pay Bills</span>
+                            </button>
+                            <button class="quick-action-btn" data-navigate="payees">
+                                <span class="action-icon">&#x2795;</span>
+                                <span>Add Payee</span>
+                            </button>
+                        </div>
+
+                        <section class="section">
+                            <h2 class="section-title">Account Summary</h2>
+                            <div class="accounts-grid" id="dashboard-accounts">
+                                <div class="loading-spinner">Loading accounts...</div>
+                            </div>
+                        </section>
+
+                        <section class="section">
+                            <h2 class="section-title">Recent Activity</h2>
+                            <div class="recent-activity" id="recent-activity">
+                                <div class="loading-spinner">Loading activity...</div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Accounts Page -->
+                    <div id="accounts-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <h1>My Accounts</h1>
+                            <p class="page-subtitle">View and manage your bank accounts.</p>
+                        </div>
+                        <div class="accounts-grid" id="accounts-list">
+                            <div class="loading-spinner">Loading accounts...</div>
+                        </div>
+                    </div>
+
+                    <!-- Account Detail Page -->
+                    <div id="account-detail-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <button class="btn btn-back" data-navigate="accounts">&larr; Back to Accounts</button>
+                            <h1 id="account-detail-name">Account Details</h1>
+                        </div>
+
+                        <div class="account-detail-card" id="account-detail-card">
+                            <div class="detail-row">
+                                <span class="detail-label">Account Type</span>
+                                <span class="detail-value" id="account-detail-type"></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Current Balance</span>
+                                <span class="detail-value balance" id="account-detail-balance"></span>
+                            </div>
+                        </div>
+
+                        <section class="section" id="fund-account-section">
+                            <h2 class="section-title">Fund Account</h2>
+                            <form class="fund-form" id="fund-account-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="fund-amount">Amount</label>
+                                        <input type="number" id="fund-amount" name="amount" step="0.01" min="1" required placeholder="Enter amount">
+                                    </div>
+                                    <div class="form-group" style="display: flex; align-items: flex-end;">
+                                        <button type="submit" class="btn btn-primary">Fund Account</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="section">
+                            <div class="section-header">
+                                <h2 class="section-title">Transaction History</h2>
+                                <div class="transaction-filters">
+                                    <input type="text" id="transaction-search" placeholder="Search by remark..." class="filter-input">
+                                    <input type="date" id="transaction-date-filter" class="filter-input">
+                                    <button class="btn btn-secondary btn-sm" id="clear-filters">Clear</button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table" id="transactions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Remark</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactions-body">
+                                        <tr><td colspan="3" class="loading-row">Loading transactions...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="transactions-pagination"></div>
+                        </section>
+
+                        <section class="section">
+                            <h2 class="section-title">E-Statements</h2>
+                            <div class="statements-list" id="statements-list">
+                                <div class="loading-spinner">Loading statements...</div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Transfers Page -->
+                    <div id="transfers-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <h1>Transfers</h1>
+                            <p class="page-subtitle">Move money between accounts or send to others.</p>
+                        </div>
+
+                        <div class="transfer-tabs">
+                            <button class="tab-btn active" data-tab="internal-transfer">Internal Transfer</button>
+                            <button class="tab-btn" data-tab="external-transfer">External Transfer</button>
+                        </div>
+
+                        <!-- Internal Transfer Form -->
+                        <div id="internal-transfer" class="tab-content active">
+                            <form class="transfer-form" id="internal-transfer-form">
+                                <h3>Transfer to Vord</h3>
+                                <div class="form-group">
+                                    <label for="internal-from-account">From Account</label>
+                                    <select id="internal-from-account" name="from_account" required>
+                                        <option value="">Select source account</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="internal-to-account">Recipient Account Number</label>
+                                    <input type="text" id="internal-to-account" name="to_account" required placeholder="Enter recipient's Vord account number">
+                                    <small class="form-hint">Enter the account number of the person you want to send money to</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="internal-amount">Amount (<span id="internal-currency-symbol">₦</span>)</label>
+                                    <input type="number" id="internal-amount" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+                                </div>
+                                <div class="form-group">
+                                    <label for="internal-description">Description (Optional)</label>
+                                    <input type="text" id="internal-description" name="description" placeholder="Add a note">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Transfer Funds</button>
+                            </form>
+                        </div>
+
+                        <!-- External Transfer Form -->
+                        <div id="external-transfer" class="tab-content" style="display: none;">
+                            <form class="transfer-form" id="external-transfer-form">
+                                <h3>Send Money to Another Bank</h3>
+                                <div class="form-group">
+                                    <label for="external-from-account">From Account</label>
+                                    <select id="external-from-account" name="account" required>
+                                        <option value="">Select source account</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="external-recipient-name">Recipient Name</label>
+                                    <input type="text" id="external-recipient-name" name="recipient_name" required placeholder="Full name of recipient">
+                                </div>
+                                <div class="form-group">
+                                    <label for="external-account-number">Recipient Account Number</label>
+                                    <input type="text" id="external-account-number" name="recipient_account_number" required placeholder="Account number">
+                                </div>
+                                <div class="form-group">
+                                    <label for="external-routing-number">Bank Name</label>
+                                    <input type="text" id="external-routing-number" name="recipient_routing_number" required placeholder="Enter recipient bank name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="external-transfer-type">Transfer Type</label>
+                                    <select id="external-transfer-type" name="transfer_type" required>
+                                        <option value="">Select transfer type</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="external-amount">Amount (<span id="external-currency-symbol">₦</span>)</label>
+                                    <input type="number" id="external-amount" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Send Money</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Payees Page -->
+                    <div id="payees-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <h1>Payees</h1>
+                            <p class="page-subtitle">Manage your saved payees.</p>
+                        </div>
+
+                        <section class="section">
+                            <div class="section-header">
+                                <h2 class="section-title">Add New Payee</h2>
+                            </div>
+                            <form class="payee-form" id="add-payee-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="payee-name">Payee Name</label>
+                                        <input type="text" id="payee-name" name="name" required placeholder="Company or person name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="payee-nickname">Nickname</label>
+                                        <input type="text" id="payee-nickname" name="nickname" placeholder="Optional nickname">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="payee-account">Account Number</label>
+                                        <input type="text" id="payee-account" name="account_number" required placeholder="Account number">
+                                    </div>
+                                    <div class="form-group">
+                                    <label for="payee-routing">Bank Name</label>
+                                    <input type="text" id="payee-routing" name="routing_number" required placeholder="Bank name">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Payee</button>
+                            </form>
+                        </section>
+
+                        <section class="section">
+                            <h2 class="section-title">Your Payees</h2>
+                            <div class="payees-list" id="payees-list">
+                                <div class="loading-spinner">Loading payees...</div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Bills Page -->
+                    <div id="bills-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <h1>Bill Payments</h1>
+                            <p class="page-subtitle">Pay bills and schedule future payments.</p>
+                        </div>
+
+                        <div class="transfer-tabs">
+                            <button class="tab-btn active" data-tab="pay-bill">Pay Now</button>
+                            <button class="tab-btn" data-tab="schedule-payment">Schedule Payment</button>
+                            <button class="tab-btn" data-tab="pending-payments">Pending Payments</button>
+                        </div>
+
+                        <!-- Pay Bill Form -->
+                        <div id="pay-bill" class="tab-content active">
+                            <form class="transfer-form" id="pay-bill-form">
+                                <h3>Pay a Bill</h3>
+                                <div class="form-group">
+                                    <label for="bill-payee">Select Payee</label>
+                                    <select id="bill-payee" name="payee" required>
+                                        <option value="">Choose a payee</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bill-amount">Amount ($)</label>
+                                    <input type="number" id="bill-amount" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Pay Now</button>
+                            </form>
+                        </div>
+
+                        <!-- Schedule Payment Form -->
+                        <div id="schedule-payment" class="tab-content" style="display: none;">
+                            <form class="transfer-form" id="schedule-payment-form">
+                                <h3>Schedule a Payment</h3>
+                                <div class="form-group">
+                                    <label for="schedule-payee">Select Payee</label>
+                                    <select id="schedule-payee" name="payee" required>
+                                        <option value="">Choose a payee</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="schedule-amount">Amount ($)</label>
+                                    <input type="number" id="schedule-amount" name="amount" step="0.01" min="0.01" required placeholder="0.00">
+                                </div>
+                                <div class="form-group">
+                                    <label for="schedule-date">Payment Date</label>
+                                    <input type="date" id="schedule-date" name="schedule_date" required>
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label>
+                                        <input type="checkbox" id="schedule-recurring" name="is_recurring">
+                                        Recurring Payment
+                                    </label>
+                                </div>
+                                <div class="form-group" id="frequency-group" style="display: none;">
+                                    <label for="schedule-frequency">Frequency</label>
+                                    <select id="schedule-frequency" name="frequency">
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="quarterly">Quarterly</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Schedule Payment</button>
+                            </form>
+                        </div>
+
+                        <!-- Pending Payments -->
+                        <div id="pending-payments" class="tab-content" style="display: none;">
+                            <div class="table-container">
+                                <table class="data-table" id="pending-payments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Payee</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pending-payments-body">
+                                        <tr><td colspan="5" class="loading-row">Loading pending payments...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Page -->
+                    <div id="profile-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <h1>Profile Settings</h1>
+                            <p class="page-subtitle">Manage your account information.</p>
+                        </div>
+
+                        <section class="section">
+                            <h2 class="section-title">Personal Information</h2>
+                            <form class="profile-form" id="profile-form">
+                                <div class="form-group">
+                                    <label for="profile-username">Username</label>
+                                    <input type="text" id="profile-username" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-email">Email</label>
+                                    <input type="email" id="profile-email" name="email" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </form>
+                        </section>
+
+                        <section class="section">
+                            <h2 class="section-title">Change Password</h2>
+                            <form class="profile-form" id="change-password-form">
+                                <div class="form-group">
+                                    <label for="current-password">Current Password</label>
+                                    <input type="password" id="current-password" name="old_password" required placeholder="Enter current password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-password">New Password</label>
+                                    <input type="password" id="new-password" name="new_password" required placeholder="Enter new password" minlength="8">
+                                    <small class="form-hint">Must be at least 8 characters</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Change Password</button>
+                            </form>
+                        </section>
+
+                        <section class="section">
+                            <h2 class="section-title">Session</h2>
+                            <div class="session-info">
+                                <p>You are currently logged in. Click the button below to log out of your account.</p>
+                                <button class="btn btn-danger" id="profile-logout-btn" style="margin-top: 12px;">
+                                    <span class="nav-icon">&#x274C;</span>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Transaction Detail Page -->
+                    <div id="transaction-detail-page" class="content-page" style="display: none;">
+                        <div class="page-header">
+                            <button class="btn btn-back" data-navigate="dashboard">&larr; Back to Dashboard</button>
+                            <h1>Transaction Details</h1>
+                        </div>
+
+                        <div class="transaction-detail-card" id="transaction-detail-card">
+                            <div class="tx-detail-header">
+                                <div class="tx-detail-icon" id="tx-detail-icon">&#x2B07;</div>
+                                <div class="tx-detail-amount-container">
+                                    <div class="tx-detail-amount" id="tx-detail-amount">$0.00</div>
+                                    <div class="tx-detail-type" id="tx-detail-type">Transaction</div>
+                                </div>
+                            </div>
+
+                            <div class="tx-detail-rows">
+                                <div class="tx-detail-row">
+                                    <span class="tx-detail-label">Description</span>
+                                    <span class="tx-detail-value" id="tx-detail-description"></span>
+                                </div>
+                                <div class="tx-detail-row">
+                                    <span class="tx-detail-label">Date & Time</span>
+                                    <span class="tx-detail-value" id="tx-detail-datetime"></span>
+                                </div>
+                                <div class="tx-detail-row">
+                                    <span class="tx-detail-label">Status</span>
+                                    <span class="tx-detail-value" id="tx-detail-status">Completed</span>
+                                </div>
+                                <div class="tx-detail-row">
+                                    <span class="tx-detail-label">Payment Method</span>
+                                    <span class="tx-detail-value" id="tx-detail-payment-method"></span>
+                                </div>
+                                <div class="tx-detail-row">
+                                    <span class="tx-detail-label">Counterparty</span>
+                                    <span class="tx-detail-value" id="tx-detail-recipient"></span>
+                                </div>
+                                <div class="tx-detail-row">
+                                    <span class="tx-detail-label">Transaction ID</span>
+                                    <span class="tx-detail-value" id="tx-detail-id"></span>
+                                </div>
+                            </div>
+
+                            <div class="tx-detail-actions">
+                                <button class="btn btn-primary" id="share-tx-btn">
+                                    <span>&#x1F4CC;</span>
+                                    <span>Share Receipt</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Share Transaction Modal -->
+    <div id="share-tx-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Transaction</h3>
+                <span class="modal-close" id="close-share-tx-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="share-info">Share this transaction receipt with the recipient or your records.</p>
+                <div class="share-receipt" id="share-receipt">
+                    <!-- Receipt content will be populated here -->
+                </div>
+                <div class="share-actions">
+                    <button class="btn btn-primary" id="copy-share-btn">
+                        <span>&#x1F4CB;</span>
+                        <span>Copy to Clipboard</span>
+                    </button>
+                    <button class="btn btn-secondary" id="download-share-btn">
+                        <span>&#x1F4BE;</span>
+                        <span>Download Receipt</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
