@@ -9,7 +9,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -19,6 +19,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
         )
 
         # Auto-create both Naira and Dollar checking accounts for the new user
@@ -38,16 +40,36 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         return user
-    
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """Serializer for user profile (GET/PUT) - no password required."""
+    username = serializers.CharField(max_length=150)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+
+    def update(self, instance, validated_data):
+        old_username = instance.username
+        new_username = validated_data.get('username', instance.username)
+        instance.username = new_username
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        if old_username != new_username:
+            instance.accounts.update(name=new_username)
+        return instance
+
 
 class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
     def validate_new_password(self, value):
-        # Add your password validation logic here
         if len(value) < 8:
             raise serializers.ValidationError("Password must be at least 8 characters long.")
-        
         validate_password(value)
         return value
 

@@ -14,7 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from decimal import Decimal
 
 from onlinebankingportalapp.models import Account, BillPayment, EStatement, ExternalTransfer, Payee, ScheduledPayment, Transaction, Transfer
-from onlinebankingportalapp.serializers import AccountSerializer, BillPaymentSerializer, EStatementSerializer, ExternalTransferActivitySerializer, ExternalTransferSerializer, PayeeSerializer, RegisterSerializer, ChangePasswordSerializer, ScheduledPaymentSerializer, TransactionSerializer, TransferActivitySerializer, TransferSerializer
+from onlinebankingportalapp.serializers import AccountSerializer, BillPaymentSerializer, EStatementSerializer, ExternalTransferActivitySerializer, ExternalTransferSerializer, PayeeSerializer, RegisterSerializer, ChangePasswordSerializer, ScheduledPaymentSerializer, TransactionSerializer, TransferActivitySerializer, TransferSerializer, ProfileSerializer
 
 # Create your views here.
 
@@ -39,7 +39,9 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
 
             return JsonResponse({
-                'username': (username),
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
 
                 'refresh': str(refresh),
                 
@@ -50,14 +52,13 @@ class LoginView(APIView):
             return JsonResponse(
                 {"detail": "invalid credentials"},
                  status=status.HTTP_401_UNAUTHORIZED
-             )
+            )
             
 
 class CurrentusersView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+    serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
-    #lookup_field = 'id'
 
     def get_object(self):
         return self.request.user

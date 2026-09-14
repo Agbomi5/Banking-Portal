@@ -348,9 +348,6 @@
                 return;
             }
 
-            // Determine currency from first account
-            const currency = state.accounts.length > 0 ? state.accounts[0].currency : 'NGN';
-
             // Cache transaction details for click-to-view
             state.recentTransactions = {};
             transactions.forEach(tx => {
@@ -360,6 +357,7 @@
             container.innerHTML = transactions.map(tx => {
                 const isDebit = parseFloat(tx.amount) < 0;
                 const absAmount = Math.abs(parseFloat(tx.amount));
+                const txCurrency = tx.currency || 'NGN';
                 return `
                 <div class="activity-item ${isDebit ? 'debit' : 'credit'}" data-tx-id="${tx.id}" style="cursor: pointer;">
                     <span class="activity-icon">${isDebit ? '&#x2B07;' : '&#x2B06;'}</span>
@@ -368,7 +366,7 @@
                         <div class="activity-date">${formatDate(tx.date)}</div>
                     </div>
                     <span class="activity-amount ${isDebit ? 'debit' : 'credit'}">
-                        ${isDebit ? '-' : ''}${formatCurrency(absAmount, currency)}
+                        ${isDebit ? '-' : ''}${formatCurrency(absAmount, txCurrency)}
                     </span>
                 </div>`;
             }).join('');
@@ -395,7 +393,7 @@
 
         const isDebit = parseFloat(tx.amount) < 0;
         const absAmount = Math.abs(parseFloat(tx.amount));
-        const currency = state.accounts.length > 0 ? state.accounts[0].currency : 'NGN';
+        const currency = tx.currency || 'NGN';
         const datetime = new Date(tx.date);
 
         // Set icon and amount display
@@ -1078,6 +1076,8 @@
         try {
             const profile = await api('/profile/');
             if (profile) {
+                document.getElementById('profile-first-name').value = profile.first_name || '';
+                document.getElementById('profile-last-name').value = profile.last_name || '';
                 document.getElementById('profile-username').value = profile.username || '';
                 document.getElementById('profile-email').value = profile.email || '';
             }
@@ -1091,6 +1091,8 @@
         const form = e.target;
         
         const data = {
+            first_name: form.first_name.value,
+            last_name: form.last_name.value,
             username: form.username.value,
             email: form.email.value,
         };
@@ -1103,7 +1105,7 @@
             showToast('Profile updated successfully!', 'success');
             state.user = data;
             localStorage.setItem('user', JSON.stringify(data));
-            document.getElementById('user-greeting').textContent = `Hi, ${data.username}`;
+            document.getElementById('user-greeting').textContent = `Hi, ${data.first_name} ${data.last_name}`;
         } catch (error) {
             showToast(error.message || 'Failed to update profile', 'error');
         }
