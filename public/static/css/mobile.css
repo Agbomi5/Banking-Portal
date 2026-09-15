@@ -1,0 +1,42 @@
+/* Mobile-first improvements for VORD Banking */
+
+/* Ensure proper viewport on iOS */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Prevent zoom on inputs */
+@media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: 16px !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+}
+
+/* Fix for iOS overscroll */
+html {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Bottom safe area for tab bars */
+.bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS status bar fix */
+.ios-status-bar {
+    padding-top: env(safe-area-inset-top);
+}

@@ -20,9 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-oy5i+5zkpb%)6^r1_0unsfinf)n6u+3+rv+_xt)^hhv(3p4kyk')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [
+    "vord-banking.vercel.app",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # Application definition
