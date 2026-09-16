@@ -1,4 +1,6 @@
 from  django.urls import path
+from django.conf import settings
+from django.views.static import serve
 # from onlinebankingportalapp.views import (
 #     RegisterView,                                                                   
 #     LoginView,
@@ -35,4 +37,6 @@ urlpatterns = [
     path('bills/pending/', views.PendingPaymentsListView.as_view(), name='pending-payments'),
     path('bills/schedule/<int:pk>/', views.CancelScheduledPaymentView.as_view(), name='cancel-scheduled-payment'),
     path('accounts/fund/', views.FundAccountView.as_view(), name='fund-account'),
+] + [
+    path('static/<path:path>', serve, {'document_root': settings.BASE_DIR / 'static'}),
 ]

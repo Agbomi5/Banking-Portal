@@ -29,18 +29,8 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(APIView):
     def post(self, request):
-        content_type = request.content_type
-        body = request.body[:500] if request.body else "empty"
-        print(f"[LOGIN] content_type={content_type}, body={body}")
-        try:
-            username = request.data.get('username')
-            password = request.data.get('password')
-        except Exception as e:
-            print(f"[LOGIN] Parse error: {e}")
-            return Response({"detail": f"Parse error: {str(e)}", "content_type": content_type, "body_preview": body}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not username or not password:
-            return Response({"detail": "Username and password required", "received_username": username, "received_password": bool(password)}, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         user = authenticate(username=username, password=password)
 
