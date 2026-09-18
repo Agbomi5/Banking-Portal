@@ -29,29 +29,20 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(APIView):
     def post(self, request):
-        try:
-            content_type = request.content_type
-            body_preview = request.body[:200].decode('utf-8', errors='replace') if request.body else "empty"
-            print(f"[LOGIN] content_type={content_type}, body={body_preview}")
-            username = request.data.get('username')
-            password = request.data.get('password')
-            print(f"[LOGIN] username={username}, password_set={bool(password)}")
-        except Exception as e:
-            print(f"[LOGIN] ERROR: {e}")
-            return Response({"debug": f"Parse error: {str(e)}", "content_type": request.content_type}, status=status.HTTP_400_BAD_REQUEST)
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         if not username or not password:
-            return Response({"debug": "missing credentials", "received_username": username, "received_password": bool(password)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = authenticate(username=username, password=password)
         except Exception as e:
-            print(f"[LOGIN] authenticate ERROR: {e}")
-            return Response({"debug": f"authenticate error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"[LOGIN] DB error: {e}")
+            return Response({"detail": "Service temporarily unavailable. Please try again."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
-            print(f"[LOGIN] success for {user.username}")
             return JsonResponse({
                 'username': user.username,
                 'first_name': user.first_name,
@@ -60,7 +51,6 @@ class LoginView(APIView):
                 'access': str(refresh.access_token)
             }, status=status.HTTP_200_OK)
         else:
-            print(f"[LOGIN] failed for {username}")
             return JsonResponse(
                 {"detail": "invalid credentials"},
                 status=status.HTTP_401_UNAUTHORIZED
