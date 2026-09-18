@@ -1,1 +1,1 @@
-{"name": "banking-portal", "scripts": {"postinstall": "mkdir -p public/static && cp -r static/* public/static/ 2>/dev/null; echo 'Static files synced' && python manage.py collectstatic --noinput 2>/dev/null; echo 'Django static files collected'"}}
+{"name": "banking-portal", "scripts": {"postinstall": "mkdir -p public/static && cp -r static/* public/static/ 2>/dev/null; echo 'Static files synced' && python manage.py collectstatic --noinput 2>/dev/null && python manage.py migrate --noinput 2>/dev/null; echo 'Database migrated'"}}
