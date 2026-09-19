@@ -32,14 +32,26 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
 
+        print(f"[LOGIN] received username='{username}', password='{password[:3] if password else None}'")
+
         if not username or not password:
             return Response({"detail": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        try:
+            exists = UserModel.objects.filter(username=username).exists()
+            print(f"[LOGIN] user with username '{username}' exists: {exists}")
+        except Exception as e:
+            print(f"[LOGIN] user lookup error: {e}")
 
         try:
             user = authenticate(username=username, password=password)
         except Exception as e:
             print(f"[LOGIN] DB error: {e}")
             return Response({"detail": f"DB error: {str(e)}"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        print(f"[LOGIN] username='{username}', authenticated_user={user}")
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
