@@ -39,7 +39,7 @@ class LoginView(APIView):
             user = authenticate(username=username, password=password)
         except Exception as e:
             print(f"[LOGIN] DB error: {e}")
-            return Response({"detail": "Service temporarily unavailable. Please try again."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({"detail": f"DB error: {str(e)}"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
