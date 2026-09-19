@@ -73,11 +73,13 @@ WSGI_APPLICATION = 'onlinebankingportalproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import os
+print(f"[DB CONFIG] env DATABASE_URL raw: {os.environ.get('DATABASE_URL', 'NOT SET')[:80]}...")
 _db_config = dj_database_url.config(default='sqlite:///db.sqlite3')
-print(f"[DB CONFIG] DATABASE_URL host: {_db_config.get('HOST', 'NONE')}")
-print(f"[DB CONFIG] DATABASE_URL port: {_db_config.get('PORT', 'NONE')}")
-print(f"[DB CONFIG] DATABASE_URL user: {_db_config.get('USER', 'NONE')}")
-print(f"[DB CONFIG] DATABASE_URL name: {_db_config.get('NAME', 'NONE')}")
+print(f"[DB CONFIG] resolved host: {_db_config.get('HOST', 'NONE')}")
+print(f"[DB CONFIG] resolved port: {_db_config.get('PORT', 'NONE')}")
+print(f"[DB CONFIG] resolved user: {_db_config.get('USER', 'NONE')}")
+print(f"[DB CONFIG] resolved name: {_db_config.get('NAME', 'NONE')}")
 
 DATABASES = {
     'default': _db_config
