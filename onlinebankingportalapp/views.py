@@ -78,20 +78,7 @@ class LoginView(APIView):
             import traceback
             print(traceback.format_exc())
             return Response({"detail": f"error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            refresh = RefreshToken.for_user(user)
-            return JsonResponse({
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token)
-            }, status=status.HTTP_200_OK)
-        else:
-            return JsonResponse(
-                {"detail": "invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-            
+
 
 class CurrentusersView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
