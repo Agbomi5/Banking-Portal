@@ -272,6 +272,7 @@ class RecentActivityView(APIView):
                 'amount': item['amount'],
                 'remark': item['remark'] or 'Transaction',
                 'date': item['date'],
+                'currency': item.get('currency', 'NGN'),
                 'payment_method': item.get('payment_method', 'N/A'),
                 'recipient_details': item.get('recipient_details', None),
             })
@@ -285,6 +286,7 @@ class RecentActivityView(APIView):
                 'amount': item['amount'],
                 'remark': item['remark'],
                 'date': item['date'],
+                'currency': item.get('currency', 'NGN'),
                 'payment_method': item.get('payment_method', 'N/A'),
                 'recipient_details': item.get('recipient_details', None),
             })
@@ -298,6 +300,7 @@ class RecentActivityView(APIView):
                 'amount': item['amount'],
                 'remark': item['remark'],
                 'date': item['date'],
+                'currency': item.get('currency', 'NGN'),
                 'payment_method': item.get('payment_method', 'N/A'),
                 'recipient_details': item.get('recipient_details', None),
             })
@@ -311,6 +314,7 @@ class RecentActivityView(APIView):
                 'amount': item['amount'],
                 'remark': item['remark'],
                 'date': item['date'],
+                'currency': item.get('currency', 'NGN'),
                 'payment_method': item.get('payment_method', 'N/A'),
                 'recipient_details': item.get('recipient_details', None),
             })

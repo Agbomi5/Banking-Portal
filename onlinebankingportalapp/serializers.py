@@ -84,10 +84,11 @@ class AccountSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     payment_method = serializers.SerializerMethodField()
     recipient_details = serializers.SerializerMethodField()
+    currency = serializers.CharField(source='account.currency', read_only=True)
 
     class Meta:
         model = Transaction
-        fields = ['id', 'amount', 'remark', 'date', 'payment_method', 'recipient_details']
+        fields = ['id', 'amount', 'remark', 'date', 'payment_method', 'recipient_details', 'currency']
 
     def get_payment_method(self, obj):
         return 'Account Transaction'
@@ -232,10 +233,11 @@ class TransferActivitySerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source='timestamp')
     payment_method = serializers.SerializerMethodField()
     recipient_details = serializers.SerializerMethodField()
+    currency = serializers.CharField(source='from_account.currency', read_only=True)
 
     class Meta:
         model = Transfer
-        fields = ['id', 'amount', 'remark', 'date', 'payment_method', 'recipient_details']
+        fields = ['id', 'amount', 'remark', 'date', 'payment_method', 'recipient_details', 'currency']
 
     def __init__(self, *args, **kwargs):
         self.direction = kwargs.pop('direction', 'outgoing')
@@ -277,10 +279,11 @@ class ExternalTransferActivitySerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source='timestamp')
     payment_method = serializers.SerializerMethodField()
     recipient_details = serializers.SerializerMethodField()
+    currency = serializers.CharField(source='account.currency', read_only=True)
 
     class Meta:
         model = ExternalTransfer
-        fields = ['id', 'amount', 'remark', 'date', 'payment_method', 'recipient_details']
+        fields = ['id', 'amount', 'remark', 'date', 'payment_method', 'recipient_details', 'currency']
 
     def get_amount(self, obj):
         return str(-obj.amount)
