@@ -4,7 +4,6 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, DestroyAPIView, ListAPIView
@@ -29,12 +28,15 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(APIView):
     def post(self, request):
-        username = request.data.get('username')
+        username = (request.data.get('username') or '').strip()
         password = request.data.get('password')
 
-        user = authenticate(username=username, password=password)
+        # Mobile keyboards frequently change the case of a typed username. The
+        # password remains case-sensitive, but usernames should identify the
+        # same account regardless of that keyboard behavior.
+        user = User.objects.filter(username__iexact=username).first()
 
-        if user is not None:
+        if user is not None and user.is_active and user.check_password(password or ''):
 
             refresh = RefreshToken.for_user(user)
 
