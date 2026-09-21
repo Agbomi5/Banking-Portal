@@ -26,3 +26,12 @@ class LoginViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+
+    def test_login_without_trailing_slash_reaches_the_same_view(self):
+        response = self.client.post(
+            '/login',
+            {'username': 'MobileUser', 'password': 'correct-password'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 200)

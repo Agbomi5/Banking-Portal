@@ -22,7 +22,7 @@
         const token = state.token;
 
         // Skip auth header for login and register endpoints
-        const isAuthEndpoint = endpoint === '/login/' || endpoint === '/register/';
+        const isAuthEndpoint = endpoint === '/login' || endpoint === '/register';
 
         const defaultHeaders = {
             'Content-Type': 'application/json',
@@ -123,7 +123,7 @@
     // ==================== Authentication ====================
     async function login(username, password) {
         try {
-            const data = await api('/login/', {
+            const data = await api('/login', {
                 method: 'POST',
                 // Mobile browsers and password managers can add whitespace when
                 // filling a username. Usernames are not meaningful with it.
@@ -150,7 +150,7 @@
 
     async function register(username, email, password) {
         try {
-            await api('/register/', {
+            await api('/register', {
                 method: 'POST',
                 body: { username, email, password },
             });

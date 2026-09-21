@@ -18,7 +18,11 @@ from django.views.static import serve
 from . import views
 
 urlpatterns = [
+    # Vercel can normalize a trailing-slash API URL to its slashless form.
+    # Support both forms so authentication requests always reach Django.
+    path('register', views.RegisterView.as_view(), name='register-no-slash'),
     path('register/', views.RegisterView.as_view(), name='register'),
+    path('login', views.LoginView.as_view(), name='login-no-slash'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('profile/', views.CurrentusersView.as_view(), name='current-user-profile'),
     path('profile/password/', views.ChangePasswordView.as_view(), name='change-password'),
