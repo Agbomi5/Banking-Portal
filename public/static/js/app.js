@@ -125,7 +125,9 @@
         try {
             const data = await api('/login/', {
                 method: 'POST',
-                body: { username, password },
+                // Mobile browsers and password managers can add whitespace when
+                // filling a username. Usernames are not meaningful with it.
+                body: { username: username.trim(), password },
             });
 
             if (data && data.access) {
