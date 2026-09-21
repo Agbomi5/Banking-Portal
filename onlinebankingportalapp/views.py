@@ -26,59 +26,34 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
 
-    def post(self, request, *args, **kwargs):
-        print(f"[REGISTER] data received: {list(request.data.keys())}")
-        print(f"[REGISTER] username='{request.data.get('username')}', email='{request.data.get('email')}'")
-        try:
-            response = super().post(request, *args, **kwargs)
-            print(f"[REGISTER] success, user id={response.data.get('id', 'unknown')}")
-            return response
-        except Exception as e:
-            print(f"[REGISTER] error: {e}")
-            import traceback
-            print(traceback.format_exc())
-            raise
-
 
 class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        print(f"[LOGIN] received username='{username}', password='{password[:3] if password else None}'")
+        user = authenticate(username=username, password=password)
 
-        if not username or not password:
-            return Response({"detail": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
+        if user is not None:
 
-        from django.contrib.auth.hashers import check_password
-        from django.contrib.auth import get_user_model
-        UserModel = get_user_model()
-        try:
-            user_obj = UserModel.objects.get(username=username)
-            print(f"[LOGIN] found user: id={user_obj.id}, username='{user_obj.username}', is_active={user_obj.is_active}")
-            pw_ok = user_obj.check_password(password)
-            print(f"[LOGIN] password check: {pw_ok}")
-            if pw_ok and user_obj.is_active:
-                refresh = RefreshToken.for_user(user_obj)
-                return JsonResponse({
-                    'username': user_obj.username,
-                    'first_name': user_obj.first_name,
-                    'last_name': user_obj.last_name,
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token)
-                }, status=status.HTTP_200_OK)
-            else:
-                print(f"[LOGIN] auth failed: pw_ok={pw_ok}, is_active={user_obj.is_active}")
-                return JsonResponse({"detail": "invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-        except UserModel.DoesNotExist:
-            print(f"[LOGIN] user '{username}' does not exist")
-            return JsonResponse({"detail": "invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-        except Exception as e:
-            print(f"[LOGIN] unexpected error: {e}")
-            import traceback
-            print(traceback.format_exc())
-            return Response({"detail": f"error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            refresh = RefreshToken.for_user(user)
 
+            return JsonResponse({
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+
+                'refresh': str(refresh),
+                
+                'access': str(refresh.access_token)
+            }, status=status.HTTP_200_OK)
+            
+        else:
+            return JsonResponse(
+                {"detail": "invalid credentials"},
+                 status=status.HTTP_401_UNAUTHORIZED
+            )
+            
 
 class CurrentusersView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
