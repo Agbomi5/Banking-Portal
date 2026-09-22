@@ -319,8 +319,8 @@ class RecentActivityView(APIView):
                 'recipient_details': item.get('recipient_details', None),
             })
 
-        # Sort by date descending, limit to 5
+        # Sort by date descending, limit to 20
         activities.sort(key=lambda x: x['date'], reverse=True)
-        activities = activities[:5]
+        activities = activities[:20]
 
         return Response(activities)
