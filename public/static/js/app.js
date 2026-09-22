@@ -343,7 +343,7 @@
         
         try {
             const data = await api('/recent-activity/');
-            const transactions = data?.slice(0, 5) || [];
+            const transactions = data?.slice(0, 20) || [];
 
             if (transactions.length === 0) {
                 container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No recent activity</div></div>';
