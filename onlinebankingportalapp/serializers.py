@@ -141,6 +141,12 @@ class TransferSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['amount'] <= 0:
             raise serializers.ValidationError("Amount must be positive.")
+        from_account = Account.objects.get(id=data['from_account'])
+        to_account = Account.objects.get(id=data['to_account'])
+        if from_account.currency != to_account.currency:
+            raise serializers.ValidationError(
+                f"Currency mismatch: cannot transfer {from_account.currency} to a {to_account.currency} account."
+            )
         return data
 
     def create(self, validated_data):
