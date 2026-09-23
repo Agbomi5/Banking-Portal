@@ -338,15 +338,15 @@
         }
     }
 
-    async function loadRecentActivity() {
-        const container = document.getElementById('recent-activity');
+    async function loadTransactions() {
+        const container = document.getElementById('transactions');
         
         try {
-            const data = await api('/recent-activity/');
-            const transactions = data?.slice(0, 20) || [];
+            const data = await api('/transactions/');
+            const transactions = data || [];
 
             if (transactions.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No recent activity</div></div>';
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-text">No transactions</div></div>';
                 return;
             }
 

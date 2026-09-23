@@ -252,8 +252,8 @@ class FundAccountView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class RecentActivityView(APIView):
-    """Combined recent activity: transactions, internal transfers, external transfers."""
+class TransactionsView(APIView):
+    """Combined transaction history: transactions, internal transfers, external transfers."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -319,8 +319,7 @@ class RecentActivityView(APIView):
                 'recipient_details': item.get('recipient_details', None),
             })
 
-        # Sort by date descending, limit to 20
+        # Sort by date descending, no limit
         activities.sort(key=lambda x: x['date'], reverse=True)
-        activities = activities[:20]
 
         return Response(activities)
