@@ -22,7 +22,8 @@
         const token = state.token;
 
         // Skip auth header for login and register endpoints
-        const isAuthEndpoint = endpoint === '/login' || endpoint === '/register';
+        const isAuthEndpoint = endpoint === '/login' || endpoint === '/login/' ||
+                               endpoint === '/register' || endpoint === '/register/';
 
         const defaultHeaders = {
             'Content-Type': 'application/json',
@@ -44,6 +45,10 @@
             config.body = JSON.stringify(options.body);
         }
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        config.signal = controller.signal;
+
         try {
             const response = await fetch(url, config);
 
@@ -55,10 +60,9 @@
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                const errorMessage = errorData.detail || errorData.message ||
-                    Object.values(errorData).flat().join(', ') ||
-                    'An error occurred';
-                throw new Error(errorData.detail || errorData.message || errorMessage);
+                const errorMessage = errorData.detail || errorData.message || Object.values(errorData).flat().join(', ') ||
+                    `Request failed with status ${response.status}`;
+                throw new Error(errorMessage);
             }
 
             if (response.status === 204) {
@@ -67,10 +71,15 @@
 
             return await response.json();
         } catch (error) {
-            if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                showToast('Request timeout. Please try again.', 'error');
+            } else if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
                 showToast('Network error. Please check your connection.', 'error');
             }
             throw error;
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 
