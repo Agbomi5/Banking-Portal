@@ -270,7 +270,7 @@
     // ==================== Dashboard ====================
     async function loadDashboard() {
         await loadAccounts();
-        await loadRecentActivity();
+        await loadTransactions();
     }
 
     async function promptForFunding(accountId, currency) {
