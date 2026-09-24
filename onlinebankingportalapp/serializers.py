@@ -257,8 +257,12 @@ class TransferActivitySerializer(serializers.ModelSerializer):
     def get_remark(self, obj):
         if self.direction == 'outgoing':
             recipient = obj.to_account.name if obj.to_account else 'Unknown'
+            if obj.description:
+                return f"{obj.description} (Transfer to {recipient})"
             return f"Transfer to {recipient}"
         sender = obj.from_account.name if obj.from_account else 'Unknown'
+        if obj.description:
+            return f"{obj.description} (Transfer from {sender})"
         return f"Transfer from {sender}"
 
     def get_payment_method(self, obj):
